@@ -7,6 +7,7 @@ const envSchema = z.object({
   REDIS_HOST: z.string(),
   REDIS_PORT: z.string(),
   REDIS_PASSWORD: z.string(),
+  MONGODB_URI: z.string(),
 })
 
 const parsed = envSchema.safeParse(process.env)
