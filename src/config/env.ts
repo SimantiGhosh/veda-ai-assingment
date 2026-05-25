@@ -1,8 +1,12 @@
+import 'dotenv/config'
 import { z } from 'zod'
 import process from 'node:process'
 
 const envSchema = z.object({
   PORT: z.string(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.string(),
+  REDIS_PASSWORD: z.string(),
 })
 
 const parsed = envSchema.safeParse(process.env)
