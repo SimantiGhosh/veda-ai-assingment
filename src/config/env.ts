@@ -13,6 +13,8 @@ const envSchema = z.object({
   GCS_BUCKET_NAME: z.string(),
   GENERATION_QUEUE_CONCURRENCY: z.string(),
   PDF_QUEUE_CONCURRENCY: z.string(),
+  JWT_SECRET: z.string(),
+  GEMINI_API_KEY: z.string(),
 })
 
 const parsed = envSchema.safeParse(process.env)
