@@ -11,6 +11,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   GCS_PROJECT_ID: z.string(),
   GCS_BUCKET_NAME: z.string(),
+  GENERATION_QUEUE_CONCURRENCY: z.string(),
 })
 
 const parsed = envSchema.safeParse(process.env)
