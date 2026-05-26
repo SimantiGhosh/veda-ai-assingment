@@ -9,6 +9,8 @@ const envSchema = z.object({
   REDIS_PASSWORD: z.string(),
   MONGODB_URI: z.string(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  GCS_PROJECT_ID: z.string(),
+  GCS_BUCKET_NAME: z.string(),
 })
 
 const parsed = envSchema.safeParse(process.env)
