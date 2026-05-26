@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from 'react'
-import { EmptyState } from './components/EmptyState'
-import { Sidebar } from './components/Sidebar'
-import { TopBar } from './components/TopBar'
+import { EmptyState } from '../components/EmptyState'
+import { Sidebar } from '../components/Sidebar'
+import { TopBar } from '../components/TopBar'
 
 export default function HomePage() {
 	const [activeMobileTab, setActiveMobileTab] = useState('Assignments')

@@ -65,5 +65,18 @@ export const assignmentController = {
     } catch (err) {
       res.status(500).json({ error: (err as Error).message })
     }
+  },
+
+  async delete(req: Request, res: Response) {
+    try {
+      const assignmentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+      if (!assignmentId) return res.status(400).json({ error: 'Assignment id is required' })
+      const result = await assignmentService.deleteById(assignmentId, req.userId)
+      res.json(result)
+    } catch (err) {
+      const message = (err as Error).message
+      const status = message === 'Assignment not found' ? 404 : 500
+      res.status(status).json({ error: message })
+    }
   }
 }

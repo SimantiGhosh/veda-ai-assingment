@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid'
 import { Assignment } from '../models/assignment.model'
+import { User } from '../models/user.model'
 import { generationQueue } from '../queues'
 import type { AssignmentInput } from '../schemas/assignment.schema'
 import { redis } from '../config'
@@ -60,5 +61,13 @@ export const assignmentService = {
 
   async listByUser(userId: string) {
     return Assignment.find({ userId }).sort({ createdAt: -1 }).limit(20)
+  },
+
+  async deleteById(assignmentId: string, userId: string) {
+    const assignment = await Assignment.findOneAndDelete({ _id: assignmentId, userId })
+    if (!assignment) throw new Error('Assignment not found')
+
+    await User.updateOne({ _id: userId }, { $pull: { assignments: assignmentId } })
+    return { assignmentId }
   }
 }

@@ -15,5 +15,6 @@ router.get('/', assignmentController.list)
 router.get('/:id/status', assignmentController.getStatus)
 router.get('/:id/paper', assignmentController.getPaper)
 router.post('/:id/export-pdf', assignmentController.exportPdf)
+router.delete('/:id', assignmentController.delete)
 
 export default router
