@@ -1,0 +1,57 @@
+import { Worker, Job } from 'bullmq'
+import { redis, env } from '../config'
+import { QuestionPaper } from '../models/questionPaper.model'
+import { pdfService } from '../services/pdf.service'
+import { notificationService } from '../services/notification.service'
+import type { PdfJobData } from '../types/job.types'
+import type { QuestionPaper as QuestionPaperType } from '../types/paper.types'
+
+export const createPdfWorker = () => {
+  const worker = new Worker<PdfJobData>(
+    'pdf-export',
+    async (job: Job<PdfJobData>) => {
+      const { assignmentId, paperId } = job.data
+
+      const paper = await QuestionPaper.findById(paperId)
+      if (!paper) throw new Error('Paper not found')
+
+      const paperData = paper.toObject()
+      const paperForPdf: QuestionPaperType = {
+        _id: paperData._id.toString(),
+        assignmentId: paperData.assignmentId,
+        userId: paperData.userId,
+        title: paperData.title ?? '',
+        subject: paperData.subject ?? '',
+        totalMarks: paperData.totalMarks ?? 0,
+        generatedAt: paperData.createdAt ?? new Date(),
+        sections: (paperData.sections ?? []).map(section => ({
+          id: section.id ?? '',
+          title: section.title ?? '',
+          instruction: section.instruction ?? '',
+          questions: (section.questions ?? []).map(question => ({
+            id: question.id ?? '',
+            text: question.text ?? '',
+            difficulty: (question.difficulty ?? 'easy'),
+            marks: question.marks ?? 0,
+            type: (question.type ?? 'short_answer'),
+            options: question.options ?? undefined,
+          })),
+        })),
+      }
+
+      const url = await pdfService.generate(paperForPdf, assignmentId)
+
+      notificationService.emit(assignmentId, {
+        event: 'pdf:done',
+        assignmentId,
+        pdfUrl: url
+      })
+    },
+    {
+      connection: redis,
+      concurrency: parseInt(env.PDF_QUEUE_CONCURRENCY),
+    }
+  )
+
+  return worker
+}
