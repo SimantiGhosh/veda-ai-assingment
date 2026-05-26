@@ -1,15 +1,24 @@
 import express from 'express'
-import { env } from './config'
+import helmet from 'helmet'
+import cors from 'cors'
+import { v4 as uuid } from 'uuid'
+import routes from './api/routes'
+import { errorMiddleware } from './api/middleware/error.middleware'
 import { logger } from './utils/logger'
+
 const app = express()
-const port = env.PORT
 
-app.get('/', (req, res) => {
-	res.json({ status: 'ok' })
+app.use(helmet())
+app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }))
+app.use(express.json())
+app.use((req, res, next) => {
+  req.traceId = uuid()
+  res.setHeader('x-trace-id', req.traceId)
+  logger.info({ traceId: req.traceId, method: req.method, path: req.path }, 'Incoming request')
+  next()
 })
 
-app.listen(port, () => {
-	logger.info(`Server listening on port :${port}`)
-})
+app.use('/api/v1', routes)
+app.use(errorMiddleware)
 
-export { app }
+export default app
