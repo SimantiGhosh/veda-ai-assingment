@@ -88,7 +88,7 @@ export default function QuestionPaperPreview({
   }, [isPaperReady, assignmentId])
 
   return (
-    <div className="flex h-full w-full flex-col gap-6">
+    <div className="flex h-full min-h-[100dvh] w-full flex-col gap-6">
       {/* Top control bar */}
       <div className="flex flex-col gap-4 rounded-[22px] bg-[#1f1f1f] px-6 py-4 text-white shadow-[0px_18px_30px_rgba(0,0,0,0.15)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -154,7 +154,7 @@ export default function QuestionPaperPreview({
             key={iframeKey}
             title="Question paper preview"
             src={iframeSrc}
-            className="h-full w-full border-0"
+            className="h-screen w-full border-0"
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">

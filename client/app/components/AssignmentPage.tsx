@@ -67,6 +67,23 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
 
   useEffect(() => () => scrollTweenRef.current?.stop(), [])
 
+  useEffect(() => {
+    if (view !== 'preview') return
+    if (typeof window === 'undefined') return
+    if (!window.matchMedia('(max-width: 767px)').matches) return
+
+    const { style } = document.body
+    const previousOverflow = style.overflow
+    const previousOverscroll = style.overscrollBehavior
+    style.overflow = 'hidden'
+    style.overscrollBehavior = 'none'
+
+    return () => {
+      style.overflow = previousOverflow
+      style.overscrollBehavior = previousOverscroll
+    }
+  }, [view])
+
   const handleCreateNext = async (payload: CreateAssignmentPayload) => {
     setErrorMessage(null)
     setView('preview')

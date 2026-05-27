@@ -32,8 +32,9 @@ export default function DashboardShell({
 }: DashboardShellProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [authChecked, setAuthChecked] = useState(false)
+  const [authChecked, setAuthChecked] = useState(() => Boolean(api.getAuthToken()))
   const [showCreate, setShowCreate] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const token = api.getAuthToken()
@@ -43,6 +44,16 @@ export default function DashboardShell({
       setAuthChecked(true)
     }
   }, [router])
+
+  const handleMobileMenuToggle = () => {
+    setMenuOpen(open => !open)
+  }
+
+  const handleLogout = () => {
+    api.clearAuthToken()
+    setMenuOpen(false)
+    router.replace('/login')
+  }
 
   useEffect(() => {
     if (!allowCreate) return
@@ -94,6 +105,32 @@ export default function DashboardShell({
               <span className="absolute right-1 top-0.5 h-2 w-2 rounded-full bg-[#ff5623]" />
             </button>
             <img src="/icons/Avatar.svg" alt="Profile" className="h-8 w-8 rounded-full" />
+            <div className="relative">
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#303030]"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={handleMobileMenuToggle}
+              >
+                <img src="/icons/menu.svg" alt="Menu" className="h-4 w-4" />
+              </button>
+              {menuOpen && (
+                <div
+                  className="absolute right-0 top-10 z-20 w-[160px] rounded-xl bg-white p-1 shadow-[0px_16px_32px_rgba(0,0,0,0.14)]"
+                  role="menu"
+                >
+                  <button
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[14px] font-medium text-[#C52828] hover:bg-red-50"
+                    type="button"
+                    onClick={handleLogout}
+                    role="menuitem"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

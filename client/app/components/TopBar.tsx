@@ -36,10 +36,19 @@ export const TopBar = ({
     setMenuOpen(open => !open)
   }
 
+  const handleBack = () => {
+    router.back()
+  }
+
   return (
     <header className="absolute left-[320px] right-2 top-2 flex h-14 items-center gap-2.5 rounded-2xl bg-white/75 px-6 pr-3 max-[1280px]:static max-[1280px]:w-full">
       <div className="flex w-10 items-center">
-        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white" type="button">
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white"
+          type="button"
+          onClick={handleBack}
+          aria-label="Back"
+        >
           <img src="/icons/icon_line/Arrow_Left.svg" alt="Back" />
         </button>
       </div>
