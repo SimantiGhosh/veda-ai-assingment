@@ -2,8 +2,12 @@ import puppeteer from 'puppeteer'
 import Handlebars from 'handlebars'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import type { QuestionPaper } from '../types/paper.types'
 import { storageService } from './storage.service'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const template = Handlebars.compile(
   fs.readFileSync(path.join(__dirname, '../../templates/paper.hbs'), 'utf-8')

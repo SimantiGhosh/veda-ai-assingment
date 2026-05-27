@@ -1,10 +1,16 @@
 import { Worker, Job } from 'bullmq'
-import { redis, env } from '../config'
+import Redis from 'ioredis'
 import { QuestionPaper } from '../models/questionPaper.model'
 import { pdfService } from '../services/pdf.service'
 import { notificationService } from '../services/notification.service'
 import type { PdfJobData } from '../types/job.types'
 import type { QuestionPaper as QuestionPaperType } from '../types/paper.types'
+import { env } from '../config'
+
+const workerRedis = new Redis(env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  tls: env.REDIS_URL.startsWith('rediss://') ? {} : undefined,
+})
 
 export const createPdfWorker = () => {
   const worker = new Worker<PdfJobData>(
@@ -48,7 +54,7 @@ export const createPdfWorker = () => {
       })
     },
     {
-      connection: redis,
+      connection: workerRedis,
       concurrency: parseInt(env.PDF_QUEUE_CONCURRENCY),
     }
   )

@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq'
-import { redis } from '../config'
+import Redis from 'ioredis'
 import { Assignment } from '../models/assignment.model'
 import { QuestionPaper } from '../models/questionPaper.model'
 import { JobLog } from '../models/jobLog.model'
@@ -8,8 +8,14 @@ import { notificationService } from '../services/notification.service'
 import { storageService } from '../services/storage.service'
 import type { GenerationJobData } from '../types/job.types'
 import { env } from '../config'
+import { redis } from '../config'
 import { logger } from '../utils/logger'
 import { PDFParse } from 'pdf-parse'
+
+const workerRedis = new Redis(env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  tls: env.REDIS_URL.startsWith('rediss://') ? {} : undefined,
+})
 
 export const createGenerationWorker = () => {
   const worker = new Worker<GenerationJobData>(
@@ -82,8 +88,8 @@ export const createGenerationWorker = () => {
         assignmentId,
         traceId,
         model,
-        inputTokens: usage.input_tokens,
-        outputTokens: usage.output_tokens,
+        inputTokens: usage?.promptTokenCount,
+        outputTokens: usage?.candidatesTokenCount,
         durationMs: Date.now() - startTime,
         attempts: job.attemptsMade + 1,
         status: 'success'
@@ -97,7 +103,7 @@ export const createGenerationWorker = () => {
       })
     },
     {
-      connection: redis,
+      connection: workerRedis,
       concurrency: parseInt(env.GENERATION_QUEUE_CONCURRENCY),
     }
   )

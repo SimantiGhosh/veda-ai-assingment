@@ -1,6 +1,13 @@
 "use client"
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../lib/api'
+
+type PaperSummary = {
+  title?: string
+  subject?: string
+  totalMarks?: number
+}
 
 type QuestionPaperPreviewProps = {
   assignmentId: string
@@ -25,13 +32,32 @@ export default function QuestionPaperPreview({
   onBack,
   onGeneratePdf,
 }: QuestionPaperPreviewProps) {
+  const [paperSummary, setPaperSummary] = useState<PaperSummary | null>(null)
+
   const iframeSrc = useMemo(() => {
     const base = apiBaseUrl ? apiBaseUrl.replace(/\/$/, '') : ''
     return `${base}/api/v1/assignments/${assignmentId}/paper/html`
   }, [apiBaseUrl, assignmentId])
 
+  useEffect(() => {
+    if (!isPaperReady) return
+    api
+      .getAssignmentPaper(assignmentId)
+      .then((data: any) => {
+        setPaperSummary({
+          title: data?.title,
+          subject: data?.subject,
+          totalMarks: data?.totalMarks,
+        })
+      })
+      .catch(() => {
+        // summary is non-critical, silently ignore
+      })
+  }, [isPaperReady, assignmentId])
+
   return (
     <div className="flex h-full w-full flex-col gap-6">
+      {/* Top control bar */}
       <div className="flex flex-col gap-4 rounded-[22px] bg-[#1f1f1f] px-6 py-4 text-white shadow-[0px_18px_30px_rgba(0,0,0,0.15)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -80,6 +106,30 @@ export default function QuestionPaperPreview({
         {error ? <div className="text-[12px] text-[#ffb4a2]">{error}</div> : null}
       </div>
 
+      {/* Paper summary header — shown once paper is ready */}
+      {isPaperReady && paperSummary && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-6 py-4 shadow-[0px_4px_16px_rgba(0,0,0,0.06)]">
+          <div className="flex flex-col gap-0.5">
+            <div className="text-[18px] font-bold text-[#303030]">
+              {paperSummary.title ?? 'Question Paper'}
+            </div>
+            {paperSummary.subject && (
+              <div className="text-[13px] text-[#5d5d5d]/70">
+                Subject: <span className="font-semibold text-[#303030]">{paperSummary.subject}</span>
+              </div>
+            )}
+          </div>
+          {typeof paperSummary.totalMarks === 'number' && (
+            <div className="flex items-center gap-1.5 rounded-full bg-[#f0f0f0] px-4 py-1.5">
+              <span className="text-[13px] font-semibold text-[#303030]">
+                Total Marks: {paperSummary.totalMarks}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Preview iframe */}
       <div className="flex-1 overflow-hidden rounded-[24px] bg-white shadow-[0px_20px_40px_rgba(0,0,0,0.12)]">
         {isPaperReady ? (
           <iframe

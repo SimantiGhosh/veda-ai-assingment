@@ -1,6 +1,8 @@
 "use client"
 
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { api } from '../lib/api'
 
 const navItems = [
   { label: 'Home', icon: '/icons/home_assingment_navbar.svg' },
@@ -13,19 +15,23 @@ const navItems = [
 type SidebarProps = {
   activeTab: string
   onTabChange: (tab: string) => void
+  onCreateClick: () => void
 }
 
-export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
+export const Sidebar = ({ activeTab, onTabChange, onCreateClick }: SidebarProps) => {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    api.clearAuthToken()
+    router.replace('/login')
+  }
+
   return (
     <aside className="absolute left-2 top-2 bottom-4 flex w-[304px] flex-col items-center justify-between overflow-hidden rounded-2xl bg-white px-6 pb-8 pt-6 shadow-[0px_32px_48px_rgba(0,0,0,0.2),0px_16px_48px_rgba(0,0,0,0.12)] max-[1280px]:static max-[1280px]:h-auto max-[1280px]:w-full">
       <div className="flex w-full flex-col items-center gap-14 max-[768px]:gap-6">
         <div className="flex w-full items-center gap-4">
           <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-[0px_10px_24px_rgba(0,0,0,0.2)]">
-            <img
-              src="/icons/vedalogo.png"
-              alt="VedaAI logo"
-              className="h-full w-full object-cover"
-            />
+            <img src="/icons/vedalogo.png" alt="VedaAI logo" className="h-full w-full object-cover" />
           </div>
           <div className="text-[30px] font-bold leading-6 text-[#303030] whitespace-nowrap">VedaAI</div>
         </div>
@@ -33,8 +39,8 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
         <button
           className="flex h-[42px] w-full items-center justify-center gap-2 rounded-full border-0 bg-[#272727] px-4 text-[16px] font-medium leading-7 text-white shadow-[0px_16px_32px_rgba(0,0,0,0.12)] transition hover:bg-[#1f1f1f] hover:outline hover:outline-[4px] hover:outline-[#ff7950] active:outline active:outline-[4px] active:outline-[#ff7950]"
           type="button"
+          onClick={onCreateClick}
         >
-          {/* <img src="/icons/Frame1618872409.svg" /> */}
           <span>Create Assignment</span>
         </button>
 
@@ -74,6 +80,22 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           />
           <span>Settings</span>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-[16px] leading-[22.4px] text-[#C52828]/70 transition hover:bg-red-50 hover:text-[#C52828]"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+        >
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Log out</span>
         </motion.button>
 
         <div className="flex items-center gap-2 rounded-2xl bg-[#f0f0f0] p-3 overflow-hidden">

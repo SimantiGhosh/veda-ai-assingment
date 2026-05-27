@@ -17,7 +17,12 @@ type AssignmentItem = {
   resultId?: string
 }
 
-export default function AssignmentPage() {
+type AssignmentPageProps = {
+  triggerCreate?: boolean
+  onCreateTriggered?: () => void
+}
+
+export default function AssignmentPage({ triggerCreate, onCreateTriggered }: AssignmentPageProps) {
   const gridScrollRef = useRef<HTMLDivElement | null>(null)
   const scrollTweenRef = useRef<ReturnType<typeof animate> | null>(null)
   const [view, setView] = useState<'list' | 'create' | 'preview'>('list')
@@ -37,43 +42,30 @@ export default function AssignmentPage() {
     return process.env.NEXT_PUBLIC_SOCKET_URL ?? apiBaseUrl
   }, [apiBaseUrl])
 
+  // Respond to sidebar "Create Assignment" click
+  useEffect(() => {
+    if (triggerCreate) {
+      setView('create')
+      onCreateTriggered?.()
+    }
+  }, [triggerCreate, onCreateTriggered])
+
   const handleGridWheel = useCallback((event: React.WheelEvent) => {
     const container = gridScrollRef.current
-    if (!container || event.ctrlKey || event.shiftKey) {
-      return
-    }
-
+    if (!container || event.ctrlKey || event.shiftKey) return
     const maxScrollTop = container.scrollHeight - container.clientHeight
-    if (maxScrollTop <= 0) {
-      return
-    }
-
+    if (maxScrollTop <= 0) return
     event.preventDefault()
-
-    const targetScrollTop = Math.min(
-      maxScrollTop,
-      Math.max(0, container.scrollTop + event.deltaY)
-    )
-
+    const targetScrollTop = Math.min(maxScrollTop, Math.max(0, container.scrollTop + event.deltaY))
     scrollTweenRef.current?.stop()
     scrollTweenRef.current = animate(container.scrollTop, targetScrollTop, {
       duration: 0.45,
       ease: [0.22, 1, 0.36, 1],
-      onUpdate: (latest) => {
-        container.scrollTop = latest
-      },
+      onUpdate: (latest) => { container.scrollTop = latest },
     })
   }, [])
 
   useEffect(() => () => scrollTweenRef.current?.stop(), [])
-
-  if (view === 'list' && !isLoadingAssignments && assignments.length === 0) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <EmptyState />
-      </div>
-    )
-  }
 
   const handleCreateNext = async (payload: CreateAssignmentPayload) => {
     setErrorMessage(null)
@@ -105,7 +97,6 @@ export default function AssignmentPage() {
     if (!assignmentId) return
     setIsPdfGenerating(true)
     setErrorMessage(null)
-
     try {
       await api.exportPdf(assignmentId)
     } catch (error) {
@@ -121,7 +112,6 @@ export default function AssignmentPage() {
     setPdfUrl(null)
     setIsPdfGenerating(false)
     setErrorMessage(null)
-
     try {
       const status = await api.getAssignmentStatus(id)
       setPaperReady(Boolean(status?.resultId))
@@ -139,72 +129,73 @@ export default function AssignmentPage() {
     }
   }
 
-  useEffect(() => {
-    if (!assignmentId || view !== 'preview') {
-      return
-    }
+useEffect(() => {
+  if (!assignmentId || view !== 'preview') return
 
+  // small delay to let assignmentId settle after creation
+  const timer = setTimeout(() => {
     const socket = io(socketBaseUrl || undefined, { transports: ['websocket'] })
     socketRef.current = socket
-
     socket.emit('join:assignment', assignmentId)
 
     socket.on('job:processing', (event: { message?: string }) => {
       setProgress(10)
-      setErrorMessage(event.message ?? null)
     })
-
     socket.on('job:progress', (event: { progress?: number; message?: string }) => {
-      if (typeof event.progress === 'number') {
-        setProgress(event.progress)
-      }
-      if (event.message) {
-        setErrorMessage(null)
-      }
+      if (typeof event.progress === 'number') setProgress(event.progress)
     })
-
     socket.on('job:done', () => {
       setProgress(100)
       setPaperReady(true)
     })
-
     socket.on('job:failed', (event: { reason?: string }) => {
       setErrorMessage(event.reason ?? 'Generation failed')
     })
-
     socket.on('pdf:done', (event: { pdfUrl?: string }) => {
       setIsPdfGenerating(false)
       setPdfUrl(event.pdfUrl ?? null)
     })
+  }, 300)
 
-    return () => {
-      socket.emit('leave:assignment', assignmentId)
-      socket.disconnect()
-      socketRef.current = null
-    }
-  }, [assignmentId, socketBaseUrl, view])
+  return () => {
+    clearTimeout(timer)
+    socketRef.current?.emit('leave:assignment', assignmentId)
+    socketRef.current?.disconnect()
+    socketRef.current = null
+  }
+}, [assignmentId, socketBaseUrl, view])
 
   useEffect(() => {
     if (view !== 'list') return
-
     let isMounted = true
     setIsLoadingAssignments(true)
-    api
-      .listAssignments()
-      .then((data) => {
-        if (isMounted) setAssignments(data)
-      })
-      .catch((error) => {
-        if (isMounted) setErrorMessage((error as Error).message)
-      })
-      .finally(() => {
-        if (isMounted) setIsLoadingAssignments(false)
-      })
-
-    return () => {
-      isMounted = false
-    }
+    api.listAssignments()
+      .then((data) => { if (isMounted) setAssignments(data) })
+      .catch((error) => { if (isMounted) setErrorMessage((error as Error).message) })
+      .finally(() => { if (isMounted) setIsLoadingAssignments(false) })
+    return () => { isMounted = false }
   }, [view])
+
+  // Early return AFTER all hooks
+  if (view === 'list' && !isLoadingAssignments && assignments.length === 0) {
+    return (
+      <div className="flex h-full w-full flex-col gap-5 overflow-hidden px-2 pb-6 pt-2 md:px-4">
+        <div className="flex h-full w-full items-center justify-center">
+          <EmptyState />
+        </div>
+        <div className="flex w-full justify-center">
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-full bg-[#1f1f1f] px-5 py-2 text-[14px] font-semibold text-white shadow-[0px_18px_30px_rgba(0,0,0,0.18)]"
+            onClick={() => setView('create')}
+          >
+            <span className="text-lg leading-none">+</span>
+            Create Assignment
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full w-full flex-col gap-5 overflow-hidden px-2 pb-6 pt-2 md:px-4">
@@ -239,25 +230,17 @@ export default function AssignmentPage() {
               <div className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full bg-[#4BC26D] outline outline-[4px] outline-[#4BC26D]/40 shadow-[0px_32px_48px_rgba(0,0,0,0.20),_0px_16px_48px_rgba(0,0,0,0.12)]" />
                 <div className="inline-flex flex-col items-start gap-0.5">
-                  <div className="flex flex-col justify-center text-[20px] font-bold leading-7 text-[#303030]">
-                    Assignments
-                  </div>
-                  <div className="flex flex-col justify-center text-[14px] font-normal leading-[19.6px] text-[#5d5d5d]/55">
-                    Manage and create assignments for your classes.
-                  </div>
+                  <div className="flex flex-col justify-center text-[20px] font-bold leading-7 text-[#303030]">Assignments</div>
+                  <div className="flex flex-col justify-center text-[14px] font-normal leading-[19.6px] text-[#5d5d5d]/55">Manage and create assignments for your classes.</div>
                 </div>
               </div>
             </div>
 
             <div className="inline-flex h-16 w-full items-center justify-between overflow-hidden rounded-[20px] bg-white px-6">
               <div className="flex items-center gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <img src="/icons/Filter.svg" alt="Filter" className="h-5 w-5" />
-                    <span className="text-[14px] font-bold leading-[19.6px] text-[#A9A9A9]">
-                      Filter By
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1">
+                  <img src="/icons/Filter.svg" alt="Filter" className="h-5 w-5" />
+                  <span className="text-[14px] font-bold leading-[19.6px] text-[#A9A9A9]">Filter By</span>
                 </div>
               </div>
               <div className="flex w-[380px] items-center gap-3 max-md:w-full">
@@ -298,7 +281,7 @@ export default function AssignmentPage() {
                 </motion.div>
               ))}
             </div>
-            <div className="pointer-events-none sticky bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#e5e5e5]/80 via-[#e5e5e5]/40 via-30% via-transparent/20 to-transparent backdrop-blur-sm" />
+            <div className="pointer-events-none sticky bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#e5e5e5]/80 to-transparent" />
             <div className="sticky bottom-3 left-0 right-0 z-10 flex w-full justify-center">
               <button
                 type="button"
