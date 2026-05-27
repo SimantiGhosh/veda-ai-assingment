@@ -3,16 +3,21 @@
 import { motion } from 'framer-motion'
 
 const navItems = [
-  { label: 'Home', icon: '/icons/home_assingment_navbar.svg', active: false },
-  { label: 'My Groups', icon: '/icons/Vector.svg', active: false },
-  { label: 'Assignments', icon: '/icons/icon_line/file-text.svg', active: true },
-  { label: "AI Teacher's Toolkit", icon: '/icons/Book.svg', active: false },
-  { label: 'My Library', icon: '/icons/my_ibrary.svg', active: false },
+  { label: 'Home', icon: '/icons/home_assingment_navbar.svg' },
+  { label: 'My Groups', icon: '/icons/Vector.svg' },
+  { label: 'Assignments', icon: '/icons/icon_line/file-text.svg' },
+  { label: "AI Teacher's Toolkit", icon: '/icons/Book.svg' },
+  { label: 'My Library', icon: '/icons/my_ibrary.svg' },
 ]
 
-export const Sidebar = () => {
+type SidebarProps = {
+  activeTab: string
+  onTabChange: (tab: string) => void
+}
+
+export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
   return (
-    <aside className="absolute left-2 top-2 flex h-[calc(100vh-16px)] w-[304px] flex-col items-center justify-between overflow-hidden rounded-2xl bg-white px-6 pb-8 pt-6 shadow-[0px_32px_48px_rgba(0,0,0,0.2),0px_16px_48px_rgba(0,0,0,0.12)] max-[1280px]:static max-[1280px]:h-auto max-[1280px]:w-full">
+    <aside className="absolute left-2 top-2 bottom-4 flex w-[304px] flex-col items-center justify-between overflow-hidden rounded-2xl bg-white px-6 pb-8 pt-6 shadow-[0px_32px_48px_rgba(0,0,0,0.2),0px_16px_48px_rgba(0,0,0,0.12)] max-[1280px]:static max-[1280px]:h-auto max-[1280px]:w-full">
       <div className="flex w-full flex-col items-center gap-14 max-[768px]:gap-6">
         <div className="flex w-full items-center gap-4">
           <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-[0px_10px_24px_rgba(0,0,0,0.2)]">
@@ -38,7 +43,10 @@ export const Sidebar = () => {
             <motion.button
               key={item.label}
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-[9px] text-[16px] leading-[22.4px] text-[rgba(94,94,94,0.8)] transition hover:bg-[#f0f0f0] hover:text-[#303030]"
+              onClick={() => onTabChange(item.label)}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-[9px] text-[16px] leading-[22.4px] transition hover:bg-[#f0f0f0] hover:text-[#303030] ${
+                activeTab === item.label ? 'bg-[#f0f0f0] text-[#303030]' : 'text-[rgba(94,94,94,0.8)]'
+              }`}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 420, damping: 24, mass: 0.2 }}

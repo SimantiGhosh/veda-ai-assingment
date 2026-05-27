@@ -4,15 +4,16 @@ import { useState } from 'react'
 import { Sidebar } from '../components/Sidebar'
 import { TopBar } from '../components/TopBar'
 import AssignmentPage from '../components/AssignmentPage'
+import { EmptyState } from '../components/EmptyState'
 
 export default function HomePage() {
-	const [activeMobileTab, setActiveMobileTab] = useState('Assignments')
+	const [activeTab, setActiveTab] = useState('Assignments')
 
 	return (
 		<div className="relative min-h-screen w-full overflow-y-auto bg-gradient-to-b from-[#eeeeee] to-[#dadada] p-2 font-[var(--font-bricolage)]">
 			<div className="relative min-h-[calc(100vh-16px)] max-[1280px]:flex max-[1280px]:h-auto max-[1280px]:flex-col max-[1280px]:gap-4">
 				<div className="hidden md:block">
-					<Sidebar />
+					<Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 				</div>
 				<div className="hidden md:block">
 					<TopBar />
@@ -45,8 +46,14 @@ export default function HomePage() {
 					</div>
 				</header>
 
-				<main className="absolute left-[320px] right-6 top-[86px] flex h-[calc(100vh-120px)] flex-col max-[1280px]:static max-[1280px]:h-auto max-[1280px]:w-full max-[1280px]:px-0 max-md:mt-6 max-md:pb-28">
-					<AssignmentPage />
+				<main className="absolute left-[320px] right-0.5 top-[86px] flex h-[calc(100vh-120px)] flex-col max-[1280px]:static max-[1280px]:h-auto max-[1280px]:w-full max-[1280px]:px-0 max-md:mt-6 max-md:pb-28">
+					{activeTab === 'Assignments' ? (
+						<AssignmentPage />
+					) : (
+						<div className="flex h-full w-full items-center justify-center">
+							<EmptyState />
+						</div>
+					)}
 				</main>
 			</div>
 
@@ -60,9 +67,9 @@ export default function HomePage() {
 			<nav className="fixed bottom-4 left-4 right-4 z-10 flex items-center justify-between rounded-3xl bg-[#1f1f1f] px-6 py-3 text-white shadow-[0px_24px_40px_rgba(0,0,0,0.25)] md:hidden">
 				<button
 					type="button"
-					onClick={() => setActiveMobileTab('Home')}
+					onClick={() => setActiveTab('Home')}
 					className={`flex w-[78px] flex-col items-center gap-1 rounded-2xl px-3 py-2 transition ${
-						activeMobileTab === 'Home' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
+						activeTab === 'Home' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
 					}`}
 				>
 					<img src="/icons/home_assingment_navbar.svg" alt="Home" className="h-5 w-5" />
@@ -70,9 +77,9 @@ export default function HomePage() {
 				</button>
 				<button
 					type="button"
-					onClick={() => setActiveMobileTab('Assignments')}
+					onClick={() => setActiveTab('Assignments')}
 					className={`flex w-[78px] flex-col items-center gap-1 rounded-2xl px-3 py-2 transition ${
-						activeMobileTab === 'Assignments'
+						activeTab === 'Assignments'
 							? 'bg-white text-[#1f1f1f]'
 							: 'bg-transparent text-[#b6b6b6]'
 					}`}
@@ -82,9 +89,9 @@ export default function HomePage() {
 				</button>
 				<button
 					type="button"
-					onClick={() => setActiveMobileTab('Library')}
+					onClick={() => setActiveTab('Library')}
 					className={`flex w-[78px] flex-col items-center gap-1 rounded-2xl px-3 py-2 transition ${
-						activeMobileTab === 'Library' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
+						activeTab === 'Library' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
 					}`}
 				>
 					<img src="/icons/my_ibrary.svg" alt="Library" className="h-5 w-5" />
@@ -92,9 +99,9 @@ export default function HomePage() {
 				</button>
 				<button
 					type="button"
-					onClick={() => setActiveMobileTab('AI Toolkit')}
+					onClick={() => setActiveTab('AI Toolkit')}
 					className={`flex w-[78px] flex-col items-center gap-1 rounded-2xl px-3 py-2 transition ${
-						activeMobileTab === 'AI Toolkit' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
+						activeTab === 'AI Toolkit' ? 'bg-white text-[#1f1f1f]' : 'text-[#b6b6b6]'
 					}`}
 				>
 					<img src="/icons/Book.svg" alt="AI Toolkit" className="h-5 w-5" />
