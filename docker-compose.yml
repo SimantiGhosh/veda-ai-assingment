@@ -46,3 +46,4 @@ services:
 volumes:
   mongo_data:
   redis_data:
+#only for local
