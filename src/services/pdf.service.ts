@@ -10,8 +10,12 @@ const template = Handlebars.compile(
 )
 
 export const pdfService = {
+  renderHtml(paper: QuestionPaper): string {
+    return template({ paper })
+  },
+
   async generate(paper: QuestionPaper, assignmentId: string): Promise<string> {
-    const html = template({ paper })
+    const html = this.renderHtml(paper)
 
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox']
