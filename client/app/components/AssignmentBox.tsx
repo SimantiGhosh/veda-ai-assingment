@@ -43,7 +43,7 @@ export default function AssignmentBox({
 							</div>
 						</div>
 
-						<div className="relative" data-assignment-menu>
+						<div className="relative hidden md:block" data-assignment-menu>
 							<button
 								type="button"
 								aria-label="Assignment actions"
@@ -103,14 +103,14 @@ export default function AssignmentBox({
 				</div>
 
 				<div className="inline-flex w-full items-center justify-between">
-					<div className="flex flex-1 items-center justify-between gap-6">
-						<div className="flex items-center gap-1 text-base leading-[19.2px]">
-							<span className="font-extrabold text-[#303030]">Assigned on</span>
-							<span className="font-normal text-black/50">: {assignedOn}</span>
+					<div className="flex flex-1 items-center justify-between gap-3 md:gap-6">
+						<div className="flex items-center gap-1 text-[13px] leading-[16px] md:text-base md:leading-[19.2px]">
+							<span className="whitespace-nowrap font-extrabold text-[#303030]">Assigned on</span>
+							<span className="whitespace-nowrap font-normal text-black/50">: {assignedOn}</span>
 						</div>
-						<div className="flex items-center gap-1 text-base leading-[19.2px]">
-							<span className="font-extrabold text-[#303030]">Due</span>
-							<span className="font-normal text-black/50">: {dueDate}</span>
+						<div className="flex items-center gap-1 text-[13px] leading-[16px] md:text-base md:leading-[19.2px]">
+							<span className="whitespace-nowrap font-extrabold text-[#303030]">Due</span>
+							<span className="whitespace-nowrap font-normal text-black/50">: {dueDate}</span>
 						</div>
 					</div>
 				</div>

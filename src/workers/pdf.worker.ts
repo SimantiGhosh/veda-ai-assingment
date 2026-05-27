@@ -1,6 +1,7 @@
 import { Worker, Job } from 'bullmq'
 import Redis from 'ioredis'
 import { QuestionPaper } from '../models/questionPaper.model'
+import { Assignment } from '../models/assignment.model'
 import { pdfService } from '../services/pdf.service'
 import { notificationService } from '../services/notification.service'
 import type { PdfJobData } from '../types/job.types'
@@ -20,6 +21,9 @@ export const createPdfWorker = () => {
 
       const paper = await QuestionPaper.findById(paperId)
       if (!paper) throw new Error('Paper not found')
+
+      const assignment = await Assignment.findById(assignmentId)
+      const assignmentConfig = assignment?.config
 
       const paperData = paper.toObject()
       const paperForPdf: QuestionPaperType = {
@@ -45,7 +49,7 @@ export const createPdfWorker = () => {
         })),
       }
 
-      const url = await pdfService.generate(paperForPdf, assignmentId)
+      const url = await pdfService.generate(paperForPdf, assignmentId, assignmentConfig)
 
       notificationService.emit(assignmentId, {
         event: 'pdf:done',

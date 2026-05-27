@@ -7,8 +7,8 @@
     <style>
       :root {
         --ink: #1f1f1f;
-        --muted: #6b6b6b;
-        --border: #e1e1e1;
+        --muted: #5a5a5a;
+        --border: #d6d6d6;
       }
 
       * {
@@ -17,150 +17,190 @@
 
       body {
         margin: 0;
-        font-family: "Bricolage Grotesque", "Inter", Arial, sans-serif;
+        font-family: "Georgia", "Times New Roman", serif;
         color: var(--ink);
         background: #ffffff;
       }
 
       .page {
         width: 100%;
-        padding: 32px 40px 48px;
+        padding: 28px 36px 40px;
       }
 
       .header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 24px;
-        padding-bottom: 16px;
+        text-align: center;
+        padding-bottom: 12px;
         border-bottom: 1px solid var(--border);
       }
 
-      .title {
-        font-size: 24px;
+      .school-name {
+        font-size: 18px;
         font-weight: 700;
-        margin: 0 0 6px 0;
+        margin: 0 0 4px 0;
       }
 
-      .subtitle {
-        font-size: 14px;
-        color: var(--muted);
-        margin: 0;
+      .subline {
+        font-size: 13px;
+        margin: 2px 0;
       }
 
-      .meta {
-        text-align: right;
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
         font-size: 12px;
-        color: var(--muted);
+        margin-top: 10px;
+      }
+
+      .instructions {
+        margin-top: 10px;
+        font-size: 12px;
+      }
+
+      .student-info {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px 18px;
+        font-size: 12px;
+      }
+
+      .line {
+        display: inline-block;
+        min-width: 160px;
+        border-bottom: 1px solid var(--ink);
+        transform: translateY(-2px);
       }
 
       .section {
-        margin-top: 24px;
-        padding: 18px 20px;
-        border: 1px solid var(--border);
-        border-radius: 16px;
+        margin-top: 18px;
       }
 
       .section-title {
-        font-size: 16px;
+        text-align: center;
+        font-size: 14px;
         font-weight: 700;
         margin: 0 0 8px 0;
       }
 
       .section-instruction {
-        font-size: 13px;
+        font-size: 12px;
         color: var(--muted);
-        margin: 0 0 16px 0;
+        margin: 0 0 10px 0;
+      }
+
+      .questions {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 12px;
       }
 
       .question {
-        padding: 12px 0;
-        border-bottom: 1px dashed #efefef;
+        margin: 8px 0;
       }
 
-      .question:last-child {
-        border-bottom: none;
-      }
-
-      .question-header {
+      .question-line {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
         gap: 12px;
       }
 
       .question-text {
-        font-size: 14px;
-        font-weight: 600;
-        margin: 0;
+        flex: 1;
       }
 
-      .question-meta {
-        font-size: 12px;
-        color: var(--muted);
+      .difficulty {
+        text-transform: capitalize;
+      }
+
+      .marks {
         white-space: nowrap;
       }
 
       .options {
-        margin: 8px 0 0 16px;
+        margin: 6px 0 0 16px;
         padding: 0;
         list-style: lower-alpha;
-        font-size: 13px;
-        color: var(--ink);
+        font-size: 12px;
       }
 
       .options li {
-        margin: 4px 0;
+        margin: 3px 0;
       }
 
       .footer {
-        margin-top: 28px;
-        display: flex;
-        justify-content: flex-end;
+        margin-top: 18px;
         font-size: 12px;
-        color: var(--muted);
+        font-weight: 600;
       }
     </style>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <div>
-          <h1 class="title">{{paper.title}}</h1>
-          <p class="subtitle">Subject: {{paper.subject}}</p>
+        <div class="school-name">
+          {{#if config.schoolName}}
+            {{config.schoolName}}
+          {{else}}
+            {{paper.title}}
+          {{/if}}
         </div>
-        <div class="meta">
-          <div>Total Marks: {{paper.totalMarks}}</div>
-          <div>Generated: {{paper.generatedAt}}</div>
+        <div class="subline">Subject: {{paper.subject}}</div>
+        {{#if config.className}}
+          <div class="subline">Class: {{config.className}}</div>
+        {{/if}}
+        <div class="meta-row">
+          <span>
+            Time Allowed:
+            {{#if config.timeAllowed}}
+              {{config.timeAllowed}}
+            {{else}}
+              --
+            {{/if}}
+          </span>
+          <span>Maximum Marks: {{paper.totalMarks}}</span>
         </div>
+        {{#if config.paperInstructions}}
+          <div class="instructions">{{config.paperInstructions}}</div>
+        {{/if}}
       </header>
+
+      <div class="student-info">
+        <div>Name: <span class="line"></span></div>
+        <div>Roll Number: <span class="line"></span></div>
+        <div>Class: <span class="line"></span></div>
+        <div>Section: <span class="line"></span></div>
+      </div>
 
       {{#each paper.sections}}
         <section class="section">
-          <h2 class="section-title">{{title}}</h2>
+          <div class="section-title">{{title}}</div>
           {{#if instruction}}
-            <p class="section-instruction">{{instruction}}</p>
+            <div class="section-instruction">{{instruction}}</div>
           {{/if}}
 
-          {{#each questions}}
-            <div class="question">
-              <div class="question-header">
-                <p class="question-text">{{text}}</p>
-                <span class="question-meta">{{type}} | {{difficulty}} | {{marks}} marks</span>
-              </div>
-              {{#if options}}
-                <ol class="options">
-                  {{#each options}}
-                    <li>{{this}}</li>
-                  {{/each}}
-                </ol>
-              {{/if}}
-            </div>
-          {{/each}}
+          <ol class="questions">
+            {{#each questions}}
+              <li class="question">
+                <div class="question-line">
+                  <span class="question-text">
+                    <span class="difficulty">[{{difficulty}}]</span> {{text}}
+                  </span>
+                  <span class="marks">[{{marks}} Marks]</span>
+                </div>
+                {{#if options}}
+                  <ol class="options">
+                    {{#each options}}
+                      <li>{{this}}</li>
+                    {{/each}}
+                  </ol>
+                {{/if}}
+              </li>
+            {{/each}}
+          </ol>
         </section>
       {{/each}}
 
-      <div class="footer">Assignment ID: {{paper.assignmentId}}</div>
+      <div class="footer">End of Question Paper</div>
     </div>
   </body>
 </html>

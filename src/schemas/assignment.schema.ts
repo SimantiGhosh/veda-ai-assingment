@@ -3,6 +3,10 @@ import { z } from 'zod'
 export const assignmentSchema = z.object({
   subject: z.string().min(1),
   topic: z.string().min(1),
+  schoolName: z.string().min(1).optional(),
+  className: z.string().min(1).optional(),
+  timeAllowed: z.string().min(1).optional(),
+  paperInstructions: z.string().min(1).optional(),
   totalQuestions: z.number().int().min(1).max(50),
   totalMarks: z.number().int().min(1),
   difficulty: z.object({

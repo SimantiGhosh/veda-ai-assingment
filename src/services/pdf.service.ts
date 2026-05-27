@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import type { QuestionPaper } from '../types/paper.types'
+import type { AssignmentConfig } from '../types/assignment.types'
 import { storageService } from './storage.service'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -14,12 +15,12 @@ const template = Handlebars.compile(
 )
 
 export const pdfService = {
-  renderHtml(paper: QuestionPaper): string {
-    return template({ paper })
+  renderHtml(paper: QuestionPaper, config?: AssignmentConfig): string {
+    return template({ paper, config })
   },
 
-  async generate(paper: QuestionPaper, assignmentId: string): Promise<string> {
-    const html = this.renderHtml(paper)
+  async generate(paper: QuestionPaper, assignmentId: string, config?: AssignmentConfig): Promise<string> {
+    const html = this.renderHtml(paper, config)
 
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox']

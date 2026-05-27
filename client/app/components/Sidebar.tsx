@@ -58,6 +58,7 @@ export const Sidebar = ({ activeTab, onTabChange, onCreateClick }: SidebarProps)
       <div className="flex w-full flex-col gap-3">
         <motion.button
           type="button"
+          onClick={() => onTabChange('Settings')}
           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] leading-[22.4px] text-[rgba(94,94,94,0.8)] transition hover:bg-[#f0f0f0] hover:text-[#303030]"
           initial="rest"
           whileHover="hover"

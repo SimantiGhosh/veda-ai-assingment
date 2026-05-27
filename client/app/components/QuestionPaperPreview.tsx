@@ -147,29 +147,6 @@ export default function QuestionPaperPreview({
         {previewError ? <div className="text-[12px] text-[#ffb4a2]">{previewError}</div> : null}
       </div>
 
-      {/* Paper summary header — shown once paper is ready */}
-      {previewReady && paperSummary && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-6 py-4 shadow-[0px_4px_16px_rgba(0,0,0,0.06)]">
-          <div className="flex flex-col gap-0.5">
-            <div className="text-[18px] font-bold text-[#303030]">
-              {paperSummary.title ?? 'Question Paper'}
-            </div>
-            {paperSummary.subject && (
-              <div className="text-[13px] text-[#5d5d5d]/70">
-                Subject: <span className="font-semibold text-[#303030]">{paperSummary.subject}</span>
-              </div>
-            )}
-          </div>
-          {typeof paperSummary.totalMarks === 'number' && (
-            <div className="flex items-center gap-1.5 rounded-full bg-[#f0f0f0] px-4 py-1.5">
-              <span className="text-[13px] font-semibold text-[#303030]">
-                Total Marks: {paperSummary.totalMarks}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Preview iframe */}
       <div className="flex-1 overflow-hidden rounded-[24px] bg-white shadow-[0px_20px_40px_rgba(0,0,0,0.12)]">
         {previewReady ? (

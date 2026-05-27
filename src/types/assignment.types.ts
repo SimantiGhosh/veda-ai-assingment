@@ -1,6 +1,10 @@
 export interface AssignmentConfig {
   subject: string
   topic: string
+  schoolName?: string
+  className?: string
+  timeAllowed?: string
+  paperInstructions?: string
   totalQuestions: number
   totalMarks: number
   difficulty: {

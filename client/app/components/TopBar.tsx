@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '../lib/api'
 
-export const TopBar = () => {
+type TopBarProps = {
+  title?: string
+  iconSrc?: string
+}
+
+export const TopBar = ({
+  title = 'Assignment',
+  iconSrc = '/icons/home_assingment_navbar.svg',
+}: TopBarProps) => {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isAuthed, setIsAuthed] = useState(false)
   const router = useRouter()
@@ -37,8 +45,8 @@ export const TopBar = () => {
       </div>
 
       <div className="flex items-center gap-2 text-[16px] font-semibold text-[#a9a9a9] whitespace-nowrap">
-        <img src="/icons/home_assingment_navbar.svg" alt="Assignment" />
-        <span>Assignment</span>
+        <img src={iconSrc} alt={title} />
+        <span>{title}</span>
       </div>
 
       <div className="ml-auto flex items-center gap-3 max-[768px]:w-full max-[768px]:justify-between">

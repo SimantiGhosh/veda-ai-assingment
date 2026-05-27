@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import { assignmentService } from '../../services/assignment.service'
+import { Assignment } from '../../models/assignment.model'
 import { pdfQueue } from '../../queues'
 import { pdfService } from '../../services/pdf.service'
 import type { QuestionPaper as QuestionPaperType } from '../../types/paper.types'
@@ -46,6 +47,8 @@ export const assignmentController = {
       const assignmentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
       if (!assignmentId) return res.status(400).json({ error: 'Assignment id is required' })
       const paper = await assignmentService.getPaper(assignmentId, req.userId)
+      const assignment = await Assignment.findById(assignmentId)
+      const assignmentConfig = assignment?.config
       const paperData = (paper as any)?.toObject ? (paper as any).toObject() : paper
 
       const paperForView: QuestionPaperType = {
@@ -71,7 +74,7 @@ export const assignmentController = {
         })),
       }
 
-      const html = pdfService.renderHtml(paperForView)
+      const html = pdfService.renderHtml(paperForView, assignmentConfig)
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.send(html)
     } catch (err) {

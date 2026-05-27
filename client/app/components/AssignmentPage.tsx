@@ -78,6 +78,10 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
       const data = await api.createAssignment({
         subject: payload.subject ?? 'General',
         topic: payload.topic ?? 'Assignment',
+        schoolName: payload.schoolName,
+        className: payload.className,
+        timeAllowed: payload.timeAllowed,
+        paperInstructions: payload.paperInstructions,
         totalQuestions: payload.totalQuestions,
         totalMarks: payload.totalMarks,
         difficulty: payload.difficulty ?? { easy: 34, medium: 33, hard: 33 },
@@ -216,7 +220,7 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
   // Early return AFTER all hooks
   if (view === 'list' && !isLoadingAssignments && assignments.length === 0) {
     return (
-      <div className="flex h-full w-full flex-col gap-5 overflow-hidden px-2 pb-6 pt-2 md:px-4">
+      <div className="relative flex h-full w-full flex-col gap-5 overflow-hidden px-2 pb-6 pt-2 md:px-4">
         <div className="flex h-full w-full items-center justify-center">
           <EmptyState />
         </div>
@@ -237,11 +241,11 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
   return (
     <div className="flex h-full w-full flex-col gap-5 overflow-hidden px-2 pb-6 pt-2 md:px-4">
       {view === 'create' ? (
-        <div className="assignment-grid-scroll flex-1 min-h-0 overflow-y-auto pr-1">
+        <div className="assignment-grid-scroll flex-1 min-h-0 overflow-y-auto pb-32 pr-1 md:pb-0">
           <CreateAssignment onBack={() => setView('list')} onNext={handleCreateNext} />
         </div>
       ) : view === 'preview' ? (
-        <div className="assignment-grid-scroll flex-1 min-h-0 overflow-y-auto pr-1">
+        <div className="assignment-grid-scroll flex-1 min-h-0 overflow-y-auto pb-32 pr-1 md:pb-0">
           {assignmentId ? (
             <QuestionPaperPreview
               assignmentId={assignmentId}
@@ -262,30 +266,42 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
         </div>
       ) : (
         <>
+          <section className="flex w-full items-center justify-between md:hidden">
+            <button
+              type="button"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-white/30 text-[#303030] backdrop-blur"
+              onClick={() => window.history.back()}
+              aria-label="Back"
+            >
+              <span className="text-lg leading-none">&#8592;</span>
+            </button>
+            <div className="flex-1 text-center text-[16px] font-bold text-[#303030]">Assignments</div>
+            <div className="h-12 w-12" />
+          </section>
           <section className="flex w-full flex-col gap-4">
-            <div className="inline-flex w-full items-center gap-4 rounded-2xl bg-white/0 px-1">
+            <div className="hidden w-full items-center gap-4 rounded-2xl bg-white/0 px-1 md:inline-flex">
               <div className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full bg-[#4BC26D] outline outline-[4px] outline-[#4BC26D]/40 shadow-[0px_32px_48px_rgba(0,0,0,0.20),_0px_16px_48px_rgba(0,0,0,0.12)]" />
                 <div className="inline-flex flex-col items-start gap-0.5">
-                  <div className="flex flex-col justify-center text-[20px] font-bold leading-7 text-[#303030]">Assignments</div>
-                  <div className="flex flex-col justify-center text-[14px] font-normal leading-[19.6px] text-[#5d5d5d]/55">Manage and create assignments for your classes.</div>
+                  <div className="flex flex-col justify-center text-[18px] font-bold leading-7 text-[#303030] md:text-[20px]">Assignments</div>
+                  <div className="flex flex-col justify-center text-[13px] font-normal leading-[19.6px] text-[#5d5d5d]/55 md:text-[14px]">Manage and create assignments for your classes.</div>
                 </div>
               </div>
             </div>
 
-            <div className="inline-flex h-16 w-full items-center justify-between overflow-hidden rounded-[20px] bg-white px-6">
+            <div className="inline-flex h-16 w-full items-center justify-between gap-3 overflow-hidden rounded-[20px] bg-white px-4 md:px-6">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-1">
                   <img src="/icons/Filter.svg" alt="Filter" className="h-5 w-5" />
                   <span className="text-[14px] font-bold leading-[19.6px] text-[#A9A9A9]">Filter By</span>
                 </div>
               </div>
-              <div className="flex w-[380px] items-center gap-3 max-md:w-full">
+              <div className="flex w-[220px] items-center gap-3 md:w-[380px]">
                 <div className="flex h-11 w-full items-center gap-2 rounded-full border border-black/20 px-4">
                   <img src="/icons/Lens.svg" alt="Search" className="h-5 w-5" />
                   <input
                     type="text"
-                    placeholder="Search Assignment"
+                    placeholder="Search Name"
                     className="w-full bg-transparent text-[14px] font-bold leading-[19.6px] text-[#A9A9A9] placeholder:text-[#A9A9A9] focus:outline-none"
                     disabled
                   />
@@ -321,17 +337,17 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
                 ))}
               </AnimatePresence>
             </motion.div>
-            <div className="sticky bottom-3 left-0 right-0 z-10 flex w-full justify-center">
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-full bg-[#1f1f1f] px-5 py-2 text-[14px] font-semibold text-white shadow-[0px_18px_30px_rgba(0,0,0,0.18)]"
-                onClick={() => setView('create')}
-              >
-                <span className="text-lg leading-none">+</span>
-                Create Assignment
-              </button>
-            </div>
           </motion.section>
+          <div className="absolute bottom-6 left-1/2 z-50 hidden -translate-x-1/2 justify-center md:flex">
+            <button
+              type="button"
+              className="flex items-center gap-2 rounded-full bg-[#1f1f1f] px-5 py-2 text-[14px] font-semibold text-white shadow-[0px_18px_30px_rgba(0,0,0,0.18)]"
+              onClick={() => setView('create')}
+            >
+              <span className="text-lg leading-none">+</span>
+              Create Assignment
+            </button>
+          </div>
         </>
       )}
     </div>
