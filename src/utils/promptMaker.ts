@@ -5,16 +5,26 @@ export const buildGenerationPrompt = (config: AssignmentConfig, extractedText?: 
 Respond ONLY with a valid JSON object matching the schema provided.
 No markdown, no explanation, no text outside the JSON object.`
 
-  const userPrompt = `Create an exam paper with these requirements:
+  const hasPdfContent = extractedText && extractedText.trim().length > 0
+
+  const sourceInstruction = hasPdfContent
+    ? `IMPORTANT: You MUST generate all questions directly from the provided document content below.
+Every question must be based on facts, concepts, or information found in the document.
+Do NOT generate generic or unrelated questions. The document is the sole source of truth.`
+    : `Generate questions appropriate for the subject and topic provided.`
+
+  const userPrompt = `${sourceInstruction}
+
+Assignment requirements:
 - Subject: ${config.subject}
 - Topic: ${config.topic}
 - Total questions: ${config.totalQuestions}
 - Total marks: ${config.totalMarks}
 - Difficulty split: ${config.difficulty.easy}% easy, ${config.difficulty.medium}% medium, ${config.difficulty.hard}% hard
 - Question types: ${config.questionTypes.join(', ')}
-- Number of sections: ${config.sections}
-- Additional instructions: ${config.instructions || 'none'}
-${extractedText ? `- Reference material: ${extractedText}` : ''}
+- Number of sections: ${config.sections}${config.instructions ? `\n- Additional instructions: ${config.instructions}` : ''}
+
+${hasPdfContent ? `--- DOCUMENT CONTENT (use this as the source for all questions) ---\n${extractedText}\n--- END DOCUMENT CONTENT ---` : ''}
 
 Respond with this exact JSON structure:
 {

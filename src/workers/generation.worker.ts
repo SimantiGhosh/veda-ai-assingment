@@ -10,7 +10,29 @@ import type { GenerationJobData } from '../types/job.types'
 import { env } from '../config'
 import { redis } from '../config'
 import { logger } from '../utils/logger'
-import { PDFParse } from 'pdf-parse'
+
+let pdfParserReady = false
+
+const parsePdfText = async (buffer: Buffer): Promise<{ text: string; numpages: number }> => {
+  const mod = await import('pdf-parse')
+  const PDFParse = (mod as unknown as { PDFParse?: unknown }).PDFParse
+
+  if (typeof PDFParse !== 'function') {
+    throw new Error('pdf-parse PDFParse export is not a function')
+  }
+
+  const parser = new (PDFParse as new (options: { data: Buffer }) => {
+    getText: () => Promise<{ text: string; total: number }>
+    destroy: () => Promise<void>
+  })({ data: buffer })
+
+  try {
+    const result = await parser.getText()
+    return { text: result.text, numpages: result.total }
+  } finally {
+    await parser.destroy()
+  }
+}
 
 const workerRedis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: null,
@@ -24,6 +46,14 @@ export const createGenerationWorker = () => {
       const { assignmentId, userId, traceId, config, fileKey } = job.data
       const startTime = Date.now()
 
+      console.log('=== JOB STARTED ===')
+      console.log('assignmentId:', assignmentId)
+      console.log('fileKey received:', fileKey)
+      if (!pdfParserReady) {
+        console.log('pdf-parse loader ready')
+        pdfParserReady = true
+      }
+
       await job.updateProgress(5)
       notificationService.emit(assignmentId, {
         event: 'job:processing',
@@ -36,17 +66,28 @@ export const createGenerationWorker = () => {
       let extractedText: string | undefined
       if (fileKey) {
         try {
+          console.log('=== DOWNLOADING FILE ===', fileKey)
           const buffer = await storageService.downloadFile(fileKey)
-          const parser = new PDFParse({ data: buffer })
-          try {
-            const parsed = await parser.getText()
-            extractedText = parsed.text.slice(0, 3000)
-          } finally {
-            await parser.destroy()
-          }
+          console.log('=== FILE DOWNLOADED, size:', buffer.length, 'bytes ===')
+
+          const parsed = await parsePdfText(buffer)
+          console.log('=== PDF PARSED, pages:', parsed.numpages, ', raw text length:', parsed.text.length, '===')
+
+          extractedText = parsed.text
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 12000)
+
+          console.log('=== EXTRACTED TEXT LENGTH:', extractedText.length, '===')
+          console.log('=== FIRST 300 CHARS ===')
+          console.log(extractedText.slice(0, 300))
+          console.log('=== END ===')
         } catch (err) {
-          logger.warn(`File parse failed for ${fileKey}, proceeding without it`)
+          console.log('=== PDF PARSE ERROR ===', (err as Error).message)
+          logger.warn(`File parse failed for ${fileKey}: ${(err as Error).message}`)
         }
+      } else {
+        console.log('=== NO fileKey — generating without PDF context ===')
       }
 
       await job.updateProgress(20)

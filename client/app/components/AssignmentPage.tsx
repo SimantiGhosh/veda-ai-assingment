@@ -129,16 +129,20 @@ export default function AssignmentPage({ triggerCreate, onCreateTriggered }: Ass
     }
   }
 
-useEffect(() => {
-  if (!assignmentId || view !== 'preview') return
+  useEffect(() => {
+    if (!assignmentId || view !== 'preview') return
 
-  // small delay to let assignmentId settle after creation
-  const timer = setTimeout(() => {
+    // Connect immediately — no setTimeout delay.
+    // If the worker already emitted progress before we connected,
+    // the server will replay the last known event from Redis on join.
     const socket = io(socketBaseUrl || undefined, { transports: ['websocket'] })
     socketRef.current = socket
-    socket.emit('join:assignment', assignmentId)
 
-    socket.on('job:processing', (event: { message?: string }) => {
+    socket.on('connect', () => {
+      socket.emit('join:assignment', assignmentId)
+    })
+
+    socket.on('job:processing', (_event: { message?: string }) => {
       setProgress(10)
     })
     socket.on('job:progress', (event: { progress?: number; message?: string }) => {
@@ -155,15 +159,13 @@ useEffect(() => {
       setIsPdfGenerating(false)
       setPdfUrl(event.pdfUrl ?? null)
     })
-  }, 300)
 
-  return () => {
-    clearTimeout(timer)
-    socketRef.current?.emit('leave:assignment', assignmentId)
-    socketRef.current?.disconnect()
-    socketRef.current = null
-  }
-}, [assignmentId, socketBaseUrl, view])
+    return () => {
+      socketRef.current?.emit('leave:assignment', assignmentId)
+      socketRef.current?.disconnect()
+      socketRef.current = null
+    }
+  }, [assignmentId, socketBaseUrl, view])
 
   useEffect(() => {
     if (view !== 'list') return
@@ -214,7 +216,7 @@ useEffect(() => {
               pdfUrl={pdfUrl}
               progress={progress}
               error={errorMessage}
-              onBack={() => setView('create')}
+              onBack={() => setView('list')}
               onGeneratePdf={handleGeneratePdf}
             />
           ) : (

@@ -34,9 +34,13 @@ export default function QuestionPaperPreview({
 }: QuestionPaperPreviewProps) {
   const [paperSummary, setPaperSummary] = useState<PaperSummary | null>(null)
 
+  // Append the auth token as a query param so the iframe can authenticate
+  // (iframes cannot send custom Authorization headers)
   const iframeSrc = useMemo(() => {
     const base = apiBaseUrl ? apiBaseUrl.replace(/\/$/, '') : ''
-    return `${base}/api/v1/assignments/${assignmentId}/paper/html`
+    const token = api.getAuthToken()
+    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : ''
+    return `${base}/api/v1/assignments/${assignmentId}/paper/html${tokenParam}`
   }, [apiBaseUrl, assignmentId])
 
   useEffect(() => {
@@ -100,8 +104,16 @@ export default function QuestionPaperPreview({
           </div>
         </div>
 
-        {typeof progress === 'number' ? (
-          <div className="text-[12px] text-white/60">Progress: {progress}%</div>
+        {typeof progress === 'number' && progress < 100 ? (
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[12px] text-white/60">Progress: {progress}%</div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-white transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         ) : null}
         {error ? <div className="text-[12px] text-[#ffb4a2]">{error}</div> : null}
       </div>

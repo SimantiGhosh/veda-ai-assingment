@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken'
 import { env } from '../../config'
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1]
+  // Support: Authorization header, cookie, or ?token= query param (for iframe/direct URLs)
+  const token =
+    req.headers.authorization?.split(' ')[1] ||
+    req.cookies?.token ||
+    (req.query.token as string | undefined)
+
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
 
   try {

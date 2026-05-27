@@ -4,7 +4,7 @@ import { buildGenerationPrompt } from '../utils/promptMaker'
 import type { AssignmentConfig } from '../types/assignment.types'
 import { logger } from '../utils/logger'
 
-const GEMINI_MODEL = 'gemini-3-flash-preview'
+const GEMINI_MODEL = 'gemini-2.5-flash'
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
 export const aiService = {
@@ -23,15 +23,19 @@ export const aiService = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
             contents: [
               {
                 role: 'user',
-                parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+                parts: [{ text: userPrompt }],
               },
             ],
             generationConfig: {
-              maxOutputTokens: 4000,
+              maxOutputTokens: 8192,
               temperature: 0.4,
+              responseMimeType: 'application/json',
             },
           }),
         })
@@ -42,15 +46,32 @@ export const aiService = {
         }
 
         const data = await response.json()
-        const rawText = data?.candidates?.[0]?.content?.parts
+
+        // Check if Gemini truncated the response due to token limits
+        const finishReason = data?.candidates?.[0]?.finishReason
+        if (finishReason && finishReason !== 'STOP') {
+          throw new Error(`Gemini stopped early: finishReason=${finishReason}. Try reducing totalQuestions.`)
+        }
+
+        const rawText: string = data?.candidates?.[0]?.content?.parts
           ?.map((part: { text?: string }) => part.text ?? '')
           .join('')
           ?? ''
 
+        if (!rawText) {
+          throw new Error('Empty response from Gemini')
+        }
+
+        // Strip markdown fences if model ignores responseMimeType
         const cleaned = rawText
-          .replace(/```json\n?/g, '')
-          .replace(/```\n?/g, '')
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/\s*```$/i, '')
           .trim()
+
+        console.log('=== RAW LLM OUTPUT (attempt', attempt, ') ===')
+        console.log(cleaned)
+        console.log('=== END LLM OUTPUT ===')
 
         const parsed = JSON.parse(cleaned)
         const validated = questionPaperSchema.parse(parsed)
@@ -63,7 +84,17 @@ export const aiService = {
       } catch (error) {
         lastError = error as Error
         logger.warn(`AI generation attempt ${attempt} failed: ${lastError.message}`)
-        if (attempt === 3) break
+
+        console.log('=== ERROR on attempt', attempt, '===')
+        console.log(lastError.message)
+        console.log('=== END ERROR ===')
+
+        // Don't retry on validation errors — the JSON parsed fine but schema failed,
+        // retrying with same config won't help
+        if (lastError.message.startsWith('ZodError') || attempt === 3) break
+
+        // Exponential backoff before retry
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000))
       }
     }
 

@@ -16,6 +16,7 @@ export const assignmentSchema = z.object({
   sections: z.number().int().min(1).max(5),
   instructions: z.string().optional(),
   dueDate: z.string().datetime(),
+  fileKey: z.string().optional(),
 })
 
 export type AssignmentInput = z.infer<typeof assignmentSchema>

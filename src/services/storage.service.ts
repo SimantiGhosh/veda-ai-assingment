@@ -1,10 +1,14 @@
-import { Storage } from '@google-cloud/storage'
+import { Storage, type StorageOptions } from '@google-cloud/storage'
 import { env } from '../config'
 
-const storage = new Storage({
+const options: StorageOptions = {
   projectId: env.GCS_PROJECT_ID,
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-})
+  ...(process.env.GOOGLE_APPLICATION_CREDENTIALS
+    ? { keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS }
+    : {}),
+}
+
+const storage = new Storage(options)
 const bucket = storage.bucket(env.GCS_BUCKET_NAME)
 
 export const storageService = {
