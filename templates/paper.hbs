@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{paper.title}}</title>
+    <style>
+      :root {
+        --ink: #1f1f1f;
+        --muted: #6b6b6b;
+        --border: #e1e1e1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Bricolage Grotesque", "Inter", Arial, sans-serif;
+        color: var(--ink);
+        background: #ffffff;
+      }
+
+      .page {
+        width: 100%;
+        padding: 32px 40px 48px;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+      }
+
+      .meta {
+        text-align: right;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .section {
+        margin-top: 24px;
+        padding: 18px 20px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+      }
+
+      .section-instruction {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 16px 0;
+      }
+
+      .question {
+        padding: 12px 0;
+        border-bottom: 1px dashed #efefef;
+      }
+
+      .question:last-child {
+        border-bottom: none;
+      }
+
+      .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .question-text {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .question-meta {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .options {
+        margin: 8px 0 0 16px;
+        padding: 0;
+        list-style: lower-alpha;
+        font-size: 13px;
+        color: var(--ink);
+      }
+
+      .options li {
+        margin: 4px 0;
+      }
+
+      .footer {
+        margin-top: 28px;
+        display: flex;
+        justify-content: flex-end;
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1 class="title">{{paper.title}}</h1>
+          <p class="subtitle">Subject: {{paper.subject}}</p>
+        </div>
+        <div class="meta">
+          <div>Total Marks: {{paper.totalMarks}}</div>
+          <div>Generated: {{paper.generatedAt}}</div>
+        </div>
+      </header>
+
+      {{#each paper.sections}}
+        <section class="section">
+          <h2 class="section-title">{{title}}</h2>
+          {{#if instruction}}
+            <p class="section-instruction">{{instruction}}</p>
+          {{/if}}
+
+          {{#each questions}}
+            <div class="question">
+              <div class="question-header">
+                <p class="question-text">{{text}}</p>
+                <span class="question-meta">{{type}} | {{difficulty}} | {{marks}} marks</span>
+              </div>
+              {{#if options}}
+                <ol class="options">
+                  {{#each options}}
+                    <li>{{this}}</li>
+                  {{/each}}
+                </ol>
+              {{/if}}
+            </div>
+          {{/each}}
+        </section>
+      {{/each}}
+
+      <div class="footer">Assignment ID: {{paper.assignmentId}}</div>
+    </div>
+  </body>
+</html>

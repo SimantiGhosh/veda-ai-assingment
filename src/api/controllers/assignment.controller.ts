@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express'
 import { assignmentService } from '../../services/assignment.service'
 import { pdfQueue } from '../../queues'
+import { pdfService } from '../../services/pdf.service'
+import type { QuestionPaper as QuestionPaperType } from '../../types/paper.types'
 
 export const assignmentController = {
   async create(req: Request, res: Response) {
@@ -34,6 +36,44 @@ export const assignmentController = {
       if (!assignmentId) return res.status(400).json({ error: 'Assignment id is required' })
       const paper = await assignmentService.getPaper(assignmentId, req.userId)
       res.json(paper)
+    } catch (err) {
+      res.status(404).json({ error: (err as Error).message })
+    }
+  },
+
+  async getPaperHtml(req: Request, res: Response) {
+    try {
+      const assignmentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+      if (!assignmentId) return res.status(400).json({ error: 'Assignment id is required' })
+      const paper = await assignmentService.getPaper(assignmentId, req.userId)
+      const paperData = (paper as any)?.toObject ? (paper as any).toObject() : paper
+
+      const paperForView: QuestionPaperType = {
+        _id: paperData._id?.toString() ?? '',
+        assignmentId: paperData.assignmentId ?? assignmentId,
+        userId: paperData.userId ?? '',
+        title: paperData.title ?? '',
+        subject: paperData.subject ?? '',
+        totalMarks: paperData.totalMarks ?? 0,
+        generatedAt: paperData.createdAt ?? paperData.generatedAt ?? new Date(),
+        sections: (paperData.sections ?? []).map((section: any) => ({
+          id: section.id ?? '',
+          title: section.title ?? '',
+          instruction: section.instruction ?? '',
+          questions: (section.questions ?? []).map((question: any) => ({
+            id: question.id ?? '',
+            text: question.text ?? '',
+            difficulty: question.difficulty ?? 'easy',
+            marks: question.marks ?? 0,
+            type: question.type ?? 'short_answer',
+            options: question.options ?? undefined,
+          })),
+        })),
+      }
+
+      const html = pdfService.renderHtml(paperForView)
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.send(html)
     } catch (err) {
       res.status(404).json({ error: (err as Error).message })
     }

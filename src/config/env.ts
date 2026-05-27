@@ -4,9 +4,7 @@ import process from 'node:process'
 
 const envSchema = z.object({
   PORT: z.string(),
-  REDIS_HOST: z.string(),
-  REDIS_PORT: z.string(),
-  REDIS_PASSWORD: z.string(),
+  REDIS_URL: z.string(),
   MONGODB_URI: z.string(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   GCS_PROJECT_ID: z.string(),

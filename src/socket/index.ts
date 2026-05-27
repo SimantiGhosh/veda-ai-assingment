@@ -10,7 +10,7 @@ export const createSocketServer = async (httpServer: http.Server) => {
     cors: { origin: process.env.FRONTEND_URL || '*' }
   })
   
-  const pubClient = createClient({ url: `redis://${env.REDIS_HOST}:${env.REDIS_PORT}` })
+  const pubClient = createClient({ url: env.REDIS_URL })
   const subClient = pubClient.duplicate()
   await Promise.all([pubClient.connect(), subClient.connect()])
   io.adapter(createAdapter(pubClient, subClient))
