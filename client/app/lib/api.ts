@@ -46,7 +46,12 @@ export const api = {
     const response = await fetch(url, { ...options, headers })
     if (!response.ok) {
       const text = await response.text()
-      throw new Error(text || response.statusText)
+      try {
+        const json = JSON.parse(text)
+        throw new Error(json.error || json.message || response.statusText)
+      } catch {
+        throw new Error(text || response.statusText)
+      }
     }
 
     return (await response.json()) as T
