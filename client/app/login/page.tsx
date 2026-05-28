@@ -87,7 +87,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-[13px] font-medium text-[#C52828]"
             >
-              Invalid Credentials!
+              {error}
             </motion.p>
           )}
 
